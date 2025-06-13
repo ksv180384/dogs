@@ -1,0 +1,6 @@
+/_docker/mysql
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
