@@ -16,7 +16,7 @@ const mainNavItems: NavItem[] = [
   },
   {
     title: 'Производители',
-    href: 'admin/dogs',
+    href: '/admin/dogs',
     icon: LayoutGrid,
   },
 ];

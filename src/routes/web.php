@@ -14,6 +14,7 @@ Route::get('dashboard', function () {
 Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('dogs', [\App\Http\Controllers\Admin\DogController::class, 'index'])->name('admin.dogs.index');
     Route::get('dogs/create', [\App\Http\Controllers\Admin\DogController::class, 'create'])->name('admin.dog.create');
+    Route::post('dogs/store', [\App\Http\Controllers\Admin\DogController::class, 'store'])->name('admin.dog.store');
 });
 
 require __DIR__.'/settings.php';
