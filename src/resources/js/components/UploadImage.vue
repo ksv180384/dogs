@@ -93,7 +93,7 @@ watch(() => props.imagePreview, (newVal) => {
 
 <template>
   <div
-    class="relative flex h-[260px] w-[200px] items-center justify-center border-2 border-dashed rounded-lg overflow-hidden hover:border-primary transition-colors"
+    class="relative flex h-[480px] w-full items-center justify-center border-2 border-dashed rounded-lg overflow-hidden hover:border-primary transition-colors"
     @drop="addImage"
     @dragover="preventDefault"
     @dragleave="preventDefault"

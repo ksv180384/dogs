@@ -10,17 +10,20 @@ import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@/components/ui/select';
+
+import { DogSelectList } from '@/types/dog';
+
 import AppLayout from '@/layouts/AppLayout.vue';
 import InputError from '@/components/InputError.vue';
 import UploadImage from "@/components/UploadImage.vue";
+import Editor from '@/components/editor/Editor.vue';
 
-const { types, statuses } = defineProps<{
+const { dogs, types, statuses } = defineProps<{
+  dogs?: DogSelectList[];
   types?: object;
   statuses?: object;
 }>();
@@ -37,8 +40,10 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const form = useForm({
-  name: '',
   type: '',
+  parent: '',
+  name: '',
+  description: '',
   status: '',
   image: '',
 });
@@ -55,59 +60,78 @@ const submit = () => {
 
   <AppLayout :breadcrumbs="breadcrumbs">
 
-    <div class="flex h-full flex-row flex-wrap gap-4 p-4">
-      <form @submit.prevent="submit" class="flex flex-col gap-6">
-        <div class="grid gap-6">
-          <div class="grid gap-2">
-            <Label for="name">Имя</Label>
-            <Input
-              v-model="form.name"
-              id="name"
-              type="text"
-              required
-              autofocus
-              :tabindex="1"
-              autocomplete="name"
-              placeholder="Имя"
-            />
-            <InputError :message="form.errors.name" />
+    <div class="flex w-full h-full flex-row flex-wrap gap-4 p-4">cd
+      <form @submit.prevent="submit" class="flex w-full flex-col gap-6">
+        <div class="flex flex-col lg:flex-row w-full gap-6">
+          <div class="flex flex-1 flex-col gap-4">
+            <div class="flex flex-col gap-2">
+              <Label for="type">Тип</Label>
+              <Select v-model="form.type" for="type">
+                <SelectTrigger class="w-full">
+                  <SelectValue placeholder="Тип" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="(typeName, typeKey) in types"
+                    :value="typeKey"
+                  >
+                    {{ typeName }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div v-if="form.type === 'puppy'" class="flex flex-col gap-2">
+              <Label for="type">Производители</Label>
+              <Select v-model="form.parent" for="parent">
+                <SelectTrigger class="w-full">
+                  <SelectValue placeholder="Производители" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="dog in dogs"
+                    :value="dog.id"
+                  >
+                    {{ dog.name }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <Label for="name">Имя</Label>
+              <Input
+                v-model="form.name"
+                id="name"
+                type="text"
+                required
+                autofocus
+                :tabindex="1"
+                autocomplete="name"
+                placeholder="Имя"
+              />
+              <InputError :message="form.errors.name" />
+            </div>
+
+            <div class="flex flex-col gap-2">
+              <Label for="status">Статус</Label>
+              <Select v-model="form.status" id="status">
+                <SelectTrigger class="w-full">
+                  <SelectValue placeholder="Статус" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem
+                    v-for="(statusName, statusKey) in statuses"
+                    :value="statusKey"
+                  >
+                    {{ statusName }}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div class="grid gap-2">
-            <Label for="type">Тип</Label>
-            <Select for="type">
-              <SelectTrigger>
-                <SelectValue placeholder="Тип" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  v-for="(typeName, typeKey) in types"
-                  :value="typeKey"
-                >
-                  {{ typeName }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div class="grid gap-2">
-            <Label for="status">Статус</Label>
-            <Select id="status">
-              <SelectTrigger>
-                <SelectValue placeholder="Статус" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  v-for="(statusName, statusKey) in statuses"
-                  :value="statusKey"
-                >
-                  {{ statusName }}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div>
+          <div class="flex flex-1">
             <UploadImage v-model="form.image"/>
           </div>
 
@@ -144,7 +168,11 @@ const submit = () => {
 <!--            />-->
 <!--            <InputError :message="form.errors.password_confirmation" />-->
 <!--          </div>-->
-
+        </div>
+        <div>
+          <Editor v-model="form.description"/>
+        </div>
+        <div>
           <Button type="submit" class="mt-2 w-full" tabindex="5" :disabled="form.processing">
             <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
             Добавить
