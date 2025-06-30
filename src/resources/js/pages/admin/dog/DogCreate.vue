@@ -50,7 +50,9 @@ const form = useForm({
 
 const submit = () => {
   form.post(route('admin.dog.store'), {
-    onFinish: () => form.reset('password', 'password_confirmation'),
+    onFinish: () => {
+
+    },
   });
 };
 </script>
@@ -60,7 +62,7 @@ const submit = () => {
 
   <AppLayout :breadcrumbs="breadcrumbs">
 
-    <div class="flex w-full h-full flex-row flex-wrap gap-4 p-4">cd
+    <div class="flex w-full h-full flex-row flex-wrap gap-4 p-4">
       <form @submit.prevent="submit" class="flex w-full flex-col gap-6">
         <div class="flex flex-col lg:flex-row w-full gap-6">
           <div class="flex flex-1 flex-col gap-4">
@@ -74,6 +76,7 @@ const submit = () => {
                   <SelectItem
                     v-for="(typeName, typeKey) in types"
                     :value="typeKey"
+                    :key="typeName"
                   >
                     {{ typeName }}
                   </SelectItem>
@@ -91,6 +94,7 @@ const submit = () => {
                   <SelectItem
                     v-for="dog in dogs"
                     :value="dog.id"
+                    :key="dog.id"
                   >
                     {{ dog.name }}
                   </SelectItem>
@@ -123,6 +127,7 @@ const submit = () => {
                   <SelectItem
                     v-for="(statusName, statusKey) in statuses"
                     :value="statusKey"
+                    :key="statusKey"
                   >
                     {{ statusName }}
                   </SelectItem>
@@ -182,3 +187,7 @@ const submit = () => {
     </div>
   </AppLayout>
 </template>
+
+<style scoped>
+
+</style>

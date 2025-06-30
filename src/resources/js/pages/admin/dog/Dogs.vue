@@ -2,7 +2,8 @@
 import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import {Card, CardContent, CardFooter, CardHeader, CardTitle} from "@/components/ui/card";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
@@ -22,13 +23,13 @@ const breadcrumbs: BreadcrumbItem[] = [
       </Link>
     </template>
     <div class="flex h-full flex-row flex-wrap gap-4 p-4">
-      <card class="w-[400px] h-[500px]">
-        <card-header>
-          <card-title>test</card-title>
-        </card-header>
-        <card-content>asdas</card-content>
-        <card-footer>footer</card-footer>
-      </card>
+      <Card class="w-[400px] h-[500px]">
+        <CardHeader>
+          <CardTitle>test</CardTitle>
+        </CardHeader>
+        <CardContent>asdas</CardContent>
+        <CardFooter>footer</CardFooter>
+      </Card>
     </div>
   </AppLayout>
 </template>
