@@ -1,31 +1,17 @@
 <script setup lang="ts">
-import { Head, useForm } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
+import { Head } from '@inertiajs/vue3';
 
 import { type BreadcrumbItem } from '@/types';
-
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-
-import { DogSelectList } from '@/types/dog';
+import { type InertiaForm } from '@inertiajs/vue3';
+import { DogSelectList, DogFormData } from '@/types/dog';
 
 import AppLayout from '@/layouts/AppLayout.vue';
-import InputError from '@/components/InputError.vue';
-import UploadImage from "@/components/UploadImage.vue";
-import Editor from '@/components/editor/Editor.vue';
+import DogForm from '@/components/forms/DogForm.vue';
 
 const { dogs, types, statuses } = defineProps<{
   dogs?: DogSelectList[];
-  types?: object;
-  statuses?: object;
+  types?: Record<string, string>;
+  statuses?: Record<string, string>;
 }>();
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -39,16 +25,7 @@ const breadcrumbs: BreadcrumbItem[] = [
   },
 ];
 
-const form = useForm({
-  type: '',
-  parent: '',
-  name: '',
-  description: '',
-  status: '',
-  image: '',
-});
-
-const submit = () => {
+const submit = (form: InertiaForm<DogFormData>) => {
   form.post(route('admin.dog.store'), {
     onFinish: () => {
 
@@ -63,127 +40,12 @@ const submit = () => {
   <AppLayout :breadcrumbs="breadcrumbs">
 
     <div class="flex w-full h-full flex-row flex-wrap gap-4 p-4">
-      <form @submit.prevent="submit" class="flex w-full flex-col gap-6">
-        <div class="flex flex-col lg:flex-row w-full gap-6">
-          <div class="flex flex-1 flex-col gap-4">
-            <div class="flex flex-col gap-2">
-              <Label for="type">Тип</Label>
-              <Select v-model="form.type" for="type">
-                <SelectTrigger class="w-full">
-                  <SelectValue placeholder="Тип" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="(typeName, typeKey) in types"
-                    :value="typeKey"
-                    :key="typeName"
-                  >
-                    {{ typeName }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div v-if="form.type === 'puppy'" class="flex flex-col gap-2">
-              <Label for="type">Производители</Label>
-              <Select v-model="form.parent" for="parent">
-                <SelectTrigger class="w-full">
-                  <SelectValue placeholder="Производители" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="dog in dogs"
-                    :value="dog.id"
-                    :key="dog.id"
-                  >
-                    {{ dog.name }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div class="flex flex-col gap-2">
-              <Label for="name">Имя</Label>
-              <Input
-                v-model="form.name"
-                id="name"
-                type="text"
-                required
-                autofocus
-                :tabindex="1"
-                autocomplete="name"
-                placeholder="Имя"
-              />
-              <InputError :message="form.errors.name" />
-            </div>
-
-            <div class="flex flex-col gap-2">
-              <Label for="status">Статус</Label>
-              <Select v-model="form.status" id="status">
-                <SelectTrigger class="w-full">
-                  <SelectValue placeholder="Статус" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem
-                    v-for="(statusName, statusKey) in statuses"
-                    :value="statusKey"
-                    :key="statusKey"
-                  >
-                    {{ statusName }}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div class="flex flex-1">
-            <UploadImage v-model="form.image"/>
-          </div>
-
-<!--          <div class="grid gap-2">-->
-<!--            <Label for="email">Email address</Label>-->
-<!--            <Input id="email" type="email" required :tabindex="2" autocomplete="email" v-model="form.email" placeholder="email@example.com" />-->
-<!--            <InputError :message="form.errors.email" />-->
-<!--          </div>-->
-
-<!--          <div class="grid gap-2">-->
-<!--            <Label for="password">Password</Label>-->
-<!--            <Input-->
-<!--              id="password"-->
-<!--              type="password"-->
-<!--              required-->
-<!--              :tabindex="3"-->
-<!--              autocomplete="new-password"-->
-<!--              v-model="form.password"-->
-<!--              placeholder="Password"-->
-<!--            />-->
-<!--            <InputError :message="form.errors.password" />-->
-<!--          </div>-->
-
-<!--          <div class="grid gap-2">-->
-<!--            <Label for="password_confirmation">Confirm password</Label>-->
-<!--            <Input-->
-<!--              id="password_confirmation"-->
-<!--              type="password"-->
-<!--              required-->
-<!--              :tabindex="4"-->
-<!--              autocomplete="new-password"-->
-<!--              v-model="form.password_confirmation"-->
-<!--              placeholder="Confirm password"-->
-<!--            />-->
-<!--            <InputError :message="form.errors.password_confirmation" />-->
-<!--          </div>-->
-        </div>
-        <div>
-          <Editor v-model="form.description"/>
-        </div>
-        <div>
-          <Button type="submit" class="mt-2 w-full" tabindex="5" :disabled="form.processing">
-            <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-            Добавить
-          </Button>
-        </div>
-      </form>
+      <DogForm
+        :dogs="dogs"
+        :types="types"
+        :statuses="statuses"
+        @submit="submit"
+      />
     </div>
   </AppLayout>
 </template>
