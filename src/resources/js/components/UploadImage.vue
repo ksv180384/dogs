@@ -10,7 +10,8 @@ interface Props {
 const model = defineModel();
 const props = defineProps<Props>();
 const emits = defineEmits<{
-  (e: 'onChangeImage', payload: { files: FileList | null; previewUrl?: string }): void;
+  (e: 'change', payload: { files: FileList | null; previewUrl?: string }): void;
+  (e: 'delete'): void;
 }>();
 
 const inputImg = ref<HTMLInputElement | null>(null);
@@ -63,7 +64,7 @@ const processImageFile = (file: File, files: FileList) => {
   const reader = new FileReader();
   reader.onload = (event) => {
     imagePreview.value = event.target?.result as string;
-    emits('onChangeImage', {
+    emits('change', {
       files: dataTransfer.files,
       previewUrl: imagePreview.value
     });
@@ -73,11 +74,18 @@ const processImageFile = (file: File, files: FileList) => {
 
 // Удаление изображения
 const removeImg = () => {
-  imagePreview.value = undefined;
+  console.log(imagePreview.value);
+  // Проверяем, является ли imagePreview URL (а не base64)
+  const isExternalUrl = imagePreview.value?.startsWith('http') || imagePreview.value?.startsWith('/storage');
+  imagePreview.value = props.imagePreview || undefined;
   if (inputImg.value) {
     inputImg.value.value = '';
   }
-  emits('onChangeImage', { files: null, previewUrl: undefined });
+  if(isExternalUrl){
+    emits('delete');
+    return;
+  }
+  emits('change', { files: null, previewUrl: undefined });
 };
 
 // Предотвращение стандартного поведения браузера

@@ -4,7 +4,7 @@ namespace App\Http\Requests\Dog;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class CreateDogRequest extends FormRequest
+class UpdateDogRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
