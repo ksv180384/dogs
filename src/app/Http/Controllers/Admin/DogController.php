@@ -37,6 +37,11 @@ class DogController extends Controller
         ]);
     }
 
+    /**
+     * @param CreateDogRequest $request
+     * @param DogService $dogService
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(CreateDogRequest $request, DogService $dogService)
     {
         $dog = $dogService->create($request->validated());
