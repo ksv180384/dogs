@@ -32,6 +32,7 @@ const refInputImageLink = ref(null);
 const isShowAddImageField = ref(false);
 const imageLink = ref('');
 const selectFontSize = ref(16);
+const refFileInput = ref(null);
 
 const CustomTable = Table.extend({
   addAttributes() {
@@ -134,10 +135,29 @@ const addLink = () => {
     imageLink.value = '';
     return;
   }
-  editor.value.commands.setImage({ src: imageLink.value })
+  editor.value.commands.setImage({ src: imageLink.value });
   imageLink.value = '';
   isShowAddImageField.value = false;
   editor.value.chain().focus().redo().run();
+}
+
+const uploadImage = () => {
+  refFileInput.value.click();
+}
+
+const handleImageUpload = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const base64String = e.target.result;
+    // console.log(base64String); // Здесь строка base64
+    editor.value.commands.setImage({ src: base64String });
+    isShowAddImageField.value = false;
+    editor.value.chain().focus().redo().run();
+  };
+  reader.readAsDataURL(file);
 }
 
 const addTableClass = (className) => {
@@ -159,7 +179,6 @@ const addTableClass = (className) => {
 };
 
 const changeFontSize = () => {
-  console.log(selectFontSize.value)
   editor.value.chain().focus().setFontSize(`${selectFontSize.value}px`).run();
 }
 
@@ -351,6 +370,16 @@ watch(editor, (newEditor) => {
           <Icon icon="icon-park-outline:picture-one" width="16" height="16" />
         </button>
         <div class="input-add-link" @click.stop="() => false">
+          <button @click.prevent="uploadImage">
+            <Icon icon="mage:image-upload" width="16" height="16" />
+          </button>
+          <input
+            ref="refFileInput"
+            type="file"
+            accept="image/*"
+            hidden
+            @change="handleImageUpload"
+          >
           <input ref="refInputImageLink" v-model="imageLink" @keydown.enter="addLink"/>
           <button class="btn-add-link" @click="addLink">
             <Icon icon="lets-icons:done-round" width="16" height="16" />
@@ -600,6 +629,7 @@ watch(editor, (newEditor) => {
 
 .btn-add-image {
   display: flex;
+  gap: 4px;
   background-color: #dbeafe;
   border-radius: 0.5rem;
   width: 34px;
@@ -620,7 +650,7 @@ watch(editor, (newEditor) => {
 }
 
 .btn-add-image.is-show-add-image-field {
-  width: 240px;
+  width: 310px;
   overflow: hidden;
 }
 

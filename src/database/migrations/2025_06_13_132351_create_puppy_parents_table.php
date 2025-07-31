@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('parent_id');
             $table->string('name');
             $table->string('image', 500)->nullable()->default(null);
-            $table->text('description');
+            $table->text('description')->nullable()->default(null);
             $table->date('birthdate');
             $table->enum('type', ['dog', 'puppy']);
             $table->enum('status', ['active', 'hidden']);

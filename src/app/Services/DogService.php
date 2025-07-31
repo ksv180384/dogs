@@ -2,12 +2,9 @@
 
 namespace App\Services;
 
+use App\Helpers\Helper;
 use App\Models\Dog;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Drivers\Gd\Driver;
-use Intervention\Image\ImageManager;
 
 class DogService
 {
@@ -40,7 +37,26 @@ class DogService
 
     public function create(array $dogData): Dog
     {
+
+        $description = $dogData['description'];
+        $imageData = $dogData['image'];
+
+        unset($dogData['image']);
+        unset($dogData['description']);
+
         $dog = Dog::query()->create($dogData);
+        $imageUploadService = new ImageUploadService();
+        $fileName = $imageUploadService->uploadImage(
+            $imageData,
+            $dog->getImagesDir(),
+            $dog->image
+        );
+
+        $description = (new ImageBase64UploadService())->saveBase64Strings($description, $dog->getImagesDir());
+
+        $dog->image = $fileName;
+        $dog->description = $description;
+        $dog->save();
 
         return $dog;
     }
@@ -49,18 +65,39 @@ class DogService
     {
         $dog = Dog::query()->findOrFail($id);
         $imageData = $dogData['image'];
+        $description = $dogData['description'];
+        $currentDescription = $dog->description;
+
         unset($dogData['image']); // Удаляем элемент 'image' из массива
+        unset($dogData['description']);
+
+        $imagesNew = Helper::extractImageUrls($description);
+        $imagesCurrent = Helper::extractImageUrls($currentDescription);
+        $diffImages = array_diff($imagesCurrent, $imagesNew);
+
+        $imageUploadService = new ImageUploadService();
+
+        if($diffImages){
+            foreach ($diffImages as $imageNeedRemove){
+                $filenameNeedRemove = pathinfo($imageNeedRemove, PATHINFO_BASENAME);
+                $imageUploadService->deleteImage($filenameNeedRemove, $dog->getImagesDir());
+            }
+        }
 
         $dog->update($dogData);
 
-        $imageUploadService = new ImageUploadService();
-        $fileName = $imageUploadService->uploadImage(
-            $imageData,
-            $dog->getImagesDir(),
-            $dog->image
-        );
+        if($imageData){
+            $fileName = $imageUploadService->uploadImage(
+                $imageData,
+                $dog->getImagesDir(),
+                $dog->image
+            );
+            $dog->image = $fileName;
+        }
 
-        $dog->image = $fileName;
+        $description = (new ImageBase64UploadService())->saveBase64Strings($description, $dog->getImagesDir());
+
+        $dog->description = $description;
         $dog->save();
 
         return $dog;

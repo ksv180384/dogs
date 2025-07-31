@@ -24,7 +24,7 @@ class UpdateDogRequest extends FormRequest
         return [
             'parent_id' => ['nullable', 'exists:dogs,id'],
             'name' => ['required'],
-            'image' => ['required', 'image'],
+            'image' => ['nullable', 'image'],
             'description' => ['required'],
             'birthdate' => ['required', 'date_format:Y-m-d'],
             'type' => ['required'],
