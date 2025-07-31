@@ -44,6 +44,11 @@ class DogController extends Controller
         return redirect()->route('admin.dog.edit', parameters: ['id' => $dog->id ]);
     }
 
+    /**
+     * @param int $id
+     * @param DogService $dogService
+     * @return Response
+     */
     public function edit(int $id, DogService $dogService): Response
     {
         $dog = Dog::query()->findOrFail($id);
