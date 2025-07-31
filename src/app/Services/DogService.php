@@ -100,6 +100,7 @@ class DogService
         $dog->description = $description;
         $dog->save();
 
+        // todo проверка
         return $dog;
     }
 
