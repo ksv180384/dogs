@@ -3,11 +3,17 @@ import AppLayout from '@/layouts/AppLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+
+import { DogListItem } from "@/types/dog";
+
+const { dogs } = defineProps<{
+  dogs?: DogListItem[];
+}>();
 
 const breadcrumbs: BreadcrumbItem[] = [
   {
-    title: 'Dogs',
+    title: 'Собаки',
     href: '/dogs',
   },
 ];
@@ -22,14 +28,27 @@ const breadcrumbs: BreadcrumbItem[] = [
         <Button variant="link">Добавить</Button>
       </Link>
     </template>
-    <div class="flex h-full flex-row flex-wrap gap-4 p-4">
-      <Card class="w-[400px] h-[500px]">
-        <CardHeader>
-          <CardTitle>test</CardTitle>
-        </CardHeader>
-        <CardContent>asdas</CardContent>
-        <CardFooter>footer</CardFooter>
-      </Card>
+    <div class="flex h-full flex-row flex-wrap justify-around gap-4 p-4">
+      <template v-for="dog in dogs" :key="dog.id">
+        <Link :href="route('admin.dog.edit', { id: dog.id })">
+          <Card class="w-[380px] min-h-[320px] gap-2 py-2">
+            <CardHeader class="py-2">
+              <CardTitle>{{ dog.name }}</CardTitle>
+            </CardHeader>
+            <CardContent class="px-0 flex-1">
+              <img v-if="dog.image_link" :src="dog.image_link" :alt="dog.name"/>
+            </CardContent>
+            <CardFooter class="flex flex-row">
+              <div class="flex-1 text-xl">
+                {{ dog.type }}
+              </div>
+              <div>
+                Дата рождения: {{ dog.birthdate }}
+              </div>
+            </CardFooter>
+          </Card>
+        </Link>
+      </template>
     </div>
   </AppLayout>
 </template>

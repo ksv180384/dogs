@@ -2,10 +2,11 @@
 
 namespace App\Http\Resources\Dog;
 
+use App\Services\DogService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class DogResource extends JsonResource
+class DogItemResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,14 +17,11 @@ class DogResource extends JsonResource
     {
         $result = [
             'id' => $this->id,
-            'parent_id' => $this->parent_id,
             'name' => $this->name,
-            'image' => $this->image_link,
-            'description' => $this->description,
-            'birthdate' => $this->birthdate,
-            'type' => $this->type,
+            'image_link' => $this->image_link,
+            'birthdate' => $this->birthdate->format('d.m.Y'),
+            'type' => (new DogService())->getTypeByKey($this->type),
             'status' => $this->status,
-            'images' => ImageResource::collection($this->images),
         ];
 
         return $result;

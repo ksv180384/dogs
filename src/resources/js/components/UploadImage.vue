@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, defineEmits, defineProps, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -74,7 +74,6 @@ const processImageFile = (file: File, files: FileList) => {
 
 // Удаление изображения
 const removeImg = () => {
-  console.log(imagePreview.value);
   // Проверяем, является ли imagePreview URL (а не base64)
   const isExternalUrl = imagePreview.value?.startsWith('http') || imagePreview.value?.startsWith('/storage');
   imagePreview.value = props.imagePreview || undefined;

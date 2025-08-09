@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Dog\CreateDogRequest;
 use App\Http\Requests\Dog\UpdateDogRequest;
+use App\Http\Resources\Dog\DogItemResource;
 use App\Http\Resources\Dog\DogResource;
 use App\Models\Dog;
 use App\Services\DogService;
@@ -20,7 +21,7 @@ class DogController extends Controller
         $dogs = Dog::query()->get();
 
         return Inertia::render('admin/dog/Dogs', [
-            'dogs' => $dogs,
+            'dogs' => DogItemResource::collection($dogs),
         ]);
     }
 
@@ -56,7 +57,7 @@ class DogController extends Controller
      */
     public function edit(int $id, DogService $dogService): Response
     {
-        $dog = Dog::query()->findOrFail($id);
+        $dog = Dog::query()->with(['images'])->findOrFail($id);
         $types = $dogService->getTypes();
         $statuses = $dogService->getStatuses();
         $dogs = $dogService->getDogs();

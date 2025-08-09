@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import {
-  DateValue,
   parseDate,
+  CalendarDate,
   DateFormatter,
-  getLocalTimeZone,
 } from '@internationalized/date';
 import { LoaderCircle } from 'lucide-vue-next';
 import { Button } from '@/components/ui/button';
@@ -24,13 +23,16 @@ import { CalendarIcon } from 'lucide-vue-next';
 const df = new DateFormatter('ru-RU', {
   dateStyle: 'long',
 });
+
 import api from '@/services/api';
 
-import { type DogSelectList, DogFormData, Dog } from '@/types/dog';
+import { type DogSelectList, Dog } from '@/types/dog';
 
 import InputError from '@/components/InputError.vue';
 import UploadImage from '@/components/UploadImage.vue';
 import Editor from '@/components/editor/Editor.vue';
+import UploadImages from '@/components/ui/upload-images/UploadImages.vue';
+import ImageItemUploaded from '@/components/ui/upload-images/ImageItemUploaded.vue';
 
 const { dog, dogs, types, statuses } = defineProps<{
   dog?: Dog | null;
@@ -43,14 +45,24 @@ const emits = defineEmits(['submit']);
 const isLoadingImageAction = ref(false);
 const imageLink = ref(dog?.image || '');
 
-const form = useForm<DogFormData>({
+const calendarDate = computed<CalendarDate | null>({
+  get() {
+    return form.birthdate ? parseDate(form.birthdate) : null;
+  },
+  set(date: CalendarDate | null) {
+    form.birthdate = date ? date.toString() : '';
+  },
+});
+
+const form = useForm({
   name: dog?.name || '',
-  birthdate: dog?.birthdate ? parseDate(dog.birthdate as string) as DateValue : null,
+  birthdate: dog?.birthdate ? dog.birthdate.split('T')[0] : '', // строка
   description: dog?.description || '',
   type: dog?.type || '',
   status: dog?.status || '',
   parent_id: dog?.parent_id || null,
   image: null,
+  slider_images: null,
 });
 
 const submit = () => {
@@ -76,6 +88,10 @@ const deleteImage = async () => {
   } finally {
     isLoadingImageAction.value = false;
   }
+}
+
+const removeImage = (imageId: number) => {
+  alert(imageId);
 }
 
 watch(
@@ -151,11 +167,11 @@ watch(
                 variant="outline"
               >
                 <CalendarIcon class="mr-2 h-4 w-4" />
-                {{ form.birthdate ? df.format(form.birthdate.toDate(getLocalTimeZone())) : "Дата рождения" }}
+                {{ form.birthdate ? df.format(new Date(form.birthdate)) : "Дата рождения" }}
               </Button>
             </PopoverTrigger>
             <PopoverContent class="w-auto p-0">
-              <Calendar v-model="form.birthdate" initial-focus />
+              <Calendar v-model="calendarDate" initial-focus />
             </PopoverContent>
           </Popover>
           <InputError :message="form.errors.birthdate" />
@@ -178,6 +194,15 @@ watch(
             </SelectContent>
           </Select>
           <InputError :message="form.errors.status" />
+        </div>
+
+        <div>
+          <UploadImages v-model="form.slider_images"/>
+          <div class="flex flex-wrap w-full gap-1 overflow-hidden">
+            <template v-for="image in dog?.images">
+              <ImageItemUploaded :image="image" @remove="removeImage"/>
+            </template>
+          </div>
         </div>
       </div>
 

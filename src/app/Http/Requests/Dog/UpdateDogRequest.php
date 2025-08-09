@@ -29,6 +29,7 @@ class UpdateDogRequest extends FormRequest
             'birthdate' => ['required', 'date_format:Y-m-d'],
             'type' => ['required'],
             'status' => ['required'],
+            'slider_images' => ['nullable'],
         ];
     }
 }

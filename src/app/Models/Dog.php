@@ -19,6 +19,7 @@ class Dog extends Model
 
     protected $casts = [
         'comment' => PurifyHtmlOnGet::class,
+        'birthdate' => 'date',
     ];
 
     public function parent()
@@ -29,6 +30,11 @@ class Dog extends Model
     public function puppy()
     {
         return $this->hasMany(Dog::class, 'parent_id');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(DogImage::class);
     }
 
     public function getImagesDir()
