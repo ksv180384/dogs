@@ -46,7 +46,7 @@ const breadcrumbs: BreadcrumbItem[] = [
                 {{ dog.type }}
               </div>
               <div>
-                Дата рождения: {{ dog.birthdate }}
+                Д/р: {{ dog.birthdate }}
               </div>
             </CardFooter>
           </Card>
