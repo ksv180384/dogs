@@ -33,7 +33,10 @@ const breadcrumbs: BreadcrumbItem[] = [
         <Link :href="route('admin.dog.edit', { id: dog.id })">
           <Card class="w-[380px] min-h-[320px] gap-2 py-2">
             <CardHeader class="py-2">
-              <CardTitle>{{ dog.name }}</CardTitle>
+              <CardTitle class="flex flex-row justify-between">
+                <div>{{ dog.name }}</div>
+                <div>{{ dog.gender }}</div>
+              </CardTitle>
             </CardHeader>
             <CardContent class="px-0 flex-1">
               <img v-if="dog.image_link" :src="dog.image_link" :alt="dog.name"/>

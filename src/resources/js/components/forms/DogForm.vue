@@ -34,16 +34,18 @@ import Editor from '@/components/editor/Editor.vue';
 import UploadImages from '@/components/ui/upload-images/UploadImages.vue';
 import ImageItemUploaded from '@/components/ui/upload-images/ImageItemUploaded.vue';
 
-const { dog, dogs, types, statuses } = defineProps<{
+const { dog, dogs, types, genders, statuses } = defineProps<{
   dog?: Dog | null;
   dogs?: DogSelectList[];
   types?: Record<string, string>;
+  genders?: Record<string, string>;
   statuses?: Record<string, string>;
 }>();
 const emits = defineEmits(['submit']);
 
 const isLoadingImageAction = ref(false);
 const imageLink = ref(dog?.image || '');
+const galleryImages = ref(dog?.images || []);
 
 const calendarDate = computed<CalendarDate | null>({
   get() {
@@ -56,13 +58,14 @@ const calendarDate = computed<CalendarDate | null>({
 
 const form = useForm({
   name: dog?.name || '',
+  gender: dog?.gender || '',
   birthdate: dog?.birthdate ? dog.birthdate.split('T')[0] : '', // строка
   description: dog?.description || '',
   type: dog?.type || '',
   status: dog?.status || '',
   parent_id: dog?.parent_id || null,
   image: null,
-  slider_images: null,
+  slider_images: [],
 });
 
 const submit = () => {
@@ -90,14 +93,34 @@ const deleteImage = async () => {
   }
 }
 
-const removeImage = (imageId: number) => {
-  alert(imageId);
+const deleteGalleryImage = async (imageId: number) => {
+  if(!imageId){
+    return;
+  }
+
+  try {
+    const res = await api.dog.deleteGalleryImage(imageId);
+    galleryImages.value = res.images;
+  } catch (e) {
+    console.error(e);
+  } finally {
+
+  }
 }
 
 watch(
   () => dog?.image,
   (newVal) => {
    imageLink.value = newVal || '';
+  }
+);
+
+watch(
+  () => dog?.images,
+  (newVal) => {
+    if(newVal){
+      galleryImages.value = newVal;
+    }
   }
 );
 </script>
@@ -145,7 +168,7 @@ watch(
         </div>
 
         <div class="flex flex-col gap-2">
-          <Label for="name">Имя</Label>
+          <Label for="name">Кличка</Label>
           <Input
             v-model="form.name"
             id="name"
@@ -157,6 +180,25 @@ watch(
             placeholder="Имя"
           />
           <InputError :message="form.errors.name" />
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <Label for="type">Пол</Label>
+          <Select v-model="form.gender" for="gender">
+            <SelectTrigger class="w-full">
+              <SelectValue placeholder="Пол" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem
+                v-for="(genderName, genderKey) in genders"
+                :value="genderKey"
+                :key="genderName"
+              >
+                {{ genderName }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+          <InputError :message="form.errors.gender" />
         </div>
 
         <div class="flex flex-col gap-2">
@@ -196,11 +238,11 @@ watch(
           <InputError :message="form.errors.status" />
         </div>
 
-        <div>
+        <div class="flex flex-col gap-2">
           <UploadImages v-model="form.slider_images"/>
           <div class="flex flex-wrap w-full gap-1 overflow-hidden">
-            <template v-for="image in dog?.images">
-              <ImageItemUploaded :image="image" @remove="removeImage"/>
+            <template v-for="image in galleryImages">
+              <ImageItemUploaded :image="image" @remove="deleteGalleryImage"/>
             </template>
           </div>
         </div>

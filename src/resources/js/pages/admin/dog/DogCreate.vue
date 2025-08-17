@@ -8,9 +8,10 @@ import { DogSelectList, DogFormData } from '@/types/dog';
 import AppLayout from '@/layouts/AppLayout.vue';
 import DogForm from '@/components/forms/DogForm.vue';
 
-const { dogs, types, statuses } = defineProps<{
+const { dogs, types, genders, statuses } = defineProps<{
   dogs?: DogSelectList[];
   types?: Record<string, string>;
+  genders?: Record<string, string>;
   statuses?: Record<string, string>;
 }>();
 
@@ -42,6 +43,7 @@ const submit = (form: InertiaForm<DogFormData>) => {
     <div class="flex w-full h-full flex-row flex-wrap gap-4 p-4">
       <DogForm
         :dogs="dogs"
+        :genders="genders"
         :types="types"
         :statuses="statuses"
         @submit="submit"

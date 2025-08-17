@@ -8,6 +8,7 @@ export interface DogSelectList {
 export interface DogListItem {
   id: number;
   name: string;
+  gender: string;
   birthdate: string | null;
   description: string;
   type: string;
@@ -19,13 +20,14 @@ export interface DogListItem {
 export type Dog = {
   id: number;
   name: string;
+  gender: 'male' | 'female';
   birthdate: string | null;
   description: string;
   type: string;
   status: string;
   parent_id: number | null;
   image: File | null;
-  images: string[] | null;
+  images: ImageGalleryItem[] | null;
 }
 
 // export type DogFormData = {
@@ -43,15 +45,27 @@ export interface DeleteImageResponse {
   success: boolean;
   message?: string;
   deletedId?: number;
-  // Другие возможные поля ответа
 }
 
 export interface DeleteImageParams {
   id: number;
-  // Дополнительные параметры, если нужны
 }
 
 export interface DogImageItem {
   id: number;
   image_link: string;
+}
+
+export interface ImageGalleryItem {
+  id: number;
+  image_link: string;
+}
+
+export interface DeleteImageGalleryResponse {
+  message: string;
+  images: ImageGalleryItem[];
+}
+
+export interface DeleteImageGalleryParams {
+  id: number;
 }

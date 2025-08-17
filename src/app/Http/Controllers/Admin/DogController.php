@@ -7,7 +7,10 @@ use App\Http\Requests\Dog\CreateDogRequest;
 use App\Http\Requests\Dog\UpdateDogRequest;
 use App\Http\Resources\Dog\DogItemResource;
 use App\Http\Resources\Dog\DogResource;
+use App\Http\Resources\Dog\ImageResource;
 use App\Models\Dog;
+use App\Models\DogImage;
+use App\Services\DogImageService;
 use App\Services\DogService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,12 +30,14 @@ class DogController extends Controller
 
     public function create(DogService $dogService): Response
     {
+        $genders = $dogService->getGenders();
         $types = $dogService->getTypes();
         $statuses = $dogService->getStatuses();
         $dogs = $dogService->getDogs();
 
         return Inertia::render('admin/dog/DogCreate', [
             'types' => $types,
+            'genders' => $genders,
             'statuses' => $statuses,
             'dogs' => $dogs,
         ]);
@@ -58,12 +63,14 @@ class DogController extends Controller
     public function edit(int $id, DogService $dogService): Response
     {
         $dog = Dog::query()->with(['images'])->findOrFail($id);
+        $genders = $dogService->getGenders();
         $types = $dogService->getTypes();
         $statuses = $dogService->getStatuses();
         $dogs = $dogService->getDogs();
 
         return Inertia::render('admin/dog/DogEdit', [
             'dog' => DogResource::make($dog),
+            'genders' => $genders,
             'types' => $types,
             'statuses' => $statuses,
             'dogs' => $dogs,
@@ -83,6 +90,19 @@ class DogController extends Controller
 
         return response()->json([
             'message' => 'Изображение успешно удалено.',
+        ]);
+    }
+
+    public function deleteGalleryImage(int $id, DogImageService $dogImageService)
+    {
+        $dogImage = DogImage::query()->findOrFail($id);
+        $dogId = $dogImage->dog_id;
+        $dogImageService->delete($id);
+        $images = DogImage::query()->where('dog_id', $dogId)->get();
+
+        return response()->json([
+            'message' => 'Изображение успешно удалено.',
+            'images' => ImageResource::collection($images),
         ]);
     }
 }

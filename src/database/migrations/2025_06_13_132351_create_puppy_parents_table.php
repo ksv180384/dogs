@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('parent_id');
             $table->string('name');
+            $table->enum('gender', ['male', 'female'])->nullable();
             $table->string('image', 500)->nullable()->default(null);
             $table->text('description')->nullable()->default(null);
             $table->date('birthdate');

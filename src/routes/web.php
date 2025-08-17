@@ -18,6 +18,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::get('dogs/edit/{id}', [\App\Http\Controllers\Admin\DogController::class, 'edit'])->name('admin.dog.edit');
     Route::post('dogs/update/{id}', [\App\Http\Controllers\Admin\DogController::class, 'update'])->name('admin.dog.update');
     Route::post('dogs/delete-image/{id}', [\App\Http\Controllers\Admin\DogController::class, 'deleteImage'])->name('admin.dog.delete-image');
+    Route::post('dogs/delete-gallery-image/{id}', [\App\Http\Controllers\Admin\DogController::class, 'deleteGalleryImage'])->name('admin.dog.delete-gallery-image');
 });
 
 require __DIR__.'/settings.php';

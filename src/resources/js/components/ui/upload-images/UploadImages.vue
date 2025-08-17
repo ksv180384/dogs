@@ -1,35 +1,41 @@
 <script setup lang="ts">
-import { ref, defineProps, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 import ImageItem from '@/components/ui/upload-images/ImageItem.vue';
 
-interface Props {
-  images?: string[];
-  isLoad?: boolean;
-}
-
 const model = defineModel<FileList | null>();
-const props = defineProps<Props>();
 // const emits = defineEmits<{
 //   (e: 'change', payload: string[]): void;  // Отправляем массив строк (base64)
 //   (e: 'delete'): void;
 // }>();
 
 const inputImg = ref<HTMLInputElement | null>(null);
-const images = ref<string[]>(props.images || []);
+const images = ref<string[]>([]);
 
 // Обработчик изменения через input файла
 const onChangeFileInput = (e: Event) => {
   const target = e.target as HTMLInputElement;
-  const files = target.files;
+  const newFiles = target.files;
 
-  if (!files || files.length === 0) {
+  if (!newFiles || newFiles.length === 0) {
     return;
   }
 
-  processImageFile(files);
+  // Создаем массив из существующих файлов (если они есть)
+  const existingFiles = model.value ? Array.from(model.value) : [];
 
-  model.value = files;
+  // Добавляем новые файлы
+  const allFiles = [...existingFiles, ...Array.from(newFiles)];
+
+  // Создаем новый FileList (через DataTransfer)
+  const dataTransfer = new DataTransfer();
+  allFiles.forEach(file => dataTransfer.items.add(file));
+
+  // Обновляем model.value
+  model.value = dataTransfer.files;
+
+  // Очищаем input, чтобы можно было выбирать те же файлы снова
+  target.value = '';
 };
 
 // Обработчик drag and drop
@@ -41,14 +47,13 @@ const addImage = (e: DragEvent) => {
 
   if (!files || files.length === 0) return;
 
-  processImageFile(files);
-
   model.value = files;
 };
 
 // Общая функция обработки изображения
 const processImageFile = (files: FileList) => {
 
+  images.value = [];
   for (const file of files){
     // Проверяем, что это изображение
     if (!file.type.startsWith('image/')) {
@@ -99,53 +104,49 @@ const preventDefault = (e: DragEvent) => {
 
 // Следим за изменениями props.imagePreview
 watch(
-  () => props.images,
+  () => model.value,
   (newVal) => {
-  images.value = newVal ?? [];
-});
+    if(newVal){
+      processImageFile(newVal);
+    }
+},
+  { deep: true });
 </script>
 
 <template>
-  <div
-    class="relative flex h-[60px] w-full items-center justify-center border-2 border-dashed rounded-lg overflow-hidden hover:border-primary transition-colors"
-    @drop="addImage"
-    @dragover="preventDefault"
-    @dragleave="preventDefault"
-  >
-    <div class="flex flex-col items-center gap-2 p-4 text-center">
-      <i class="bi bi-cloud-arrow-up text-4xl text-muted-foreground"></i>
-      <p class="text-sm text-muted-foreground">
-        Перетащите изображение сюда или кликните для выбора
-      </p>
-    </div>
-
-    <input
-      ref="inputImg"
-      multiple
-      type="file"
-      accept="image/*"
-      class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-      @change="onChangeFileInput"
-    />
-
+  <div class="flex flex-col gap-2">
     <div
-      v-if="isLoad"
-      class="absolute inset-0 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm"
+      class="relative flex h-[60px] w-full items-center justify-center border-2 border-dashed rounded-lg overflow-hidden hover:border-primary transition-colors"
+      @drop="addImage"
+      @dragover="preventDefault"
+      @dragleave="preventDefault"
     >
-      <div class="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-      <div class="mt-3 text-sm text-muted-foreground">
-        Загрузка изображения...
+      <div class="flex flex-col items-center gap-2 p-4 text-center">
+        <i class="bi bi-cloud-arrow-up text-4xl text-muted-foreground"></i>
+        <p class="text-sm text-muted-foreground">
+          Перетащите изображение сюда или кликните для выбора
+        </p>
       </div>
-    </div>
-  </div>
 
-  <div class="flex flex-wrap w-full gap-1 overflow-hidden">
-    <template v-for="(image, index) in images">
-      <ImageItem
-        :image="image"
-        :index="index"
-        @remove="removeImg"
+      <input
+        ref="inputImg"
+        multiple
+        type="file"
+        accept="image/*"
+        class="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+        @change="onChangeFileInput"
       />
-    </template>
+
+    </div>
+
+    <div class="flex flex-wrap w-full gap-1 overflow-hidden">
+      <template v-for="(image, index) in images">
+        <ImageItem
+          :image="image"
+          :index="index"
+          @remove="removeImg"
+        />
+      </template>
+    </div>
   </div>
 </template>

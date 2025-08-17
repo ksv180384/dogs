@@ -8,10 +8,11 @@ import { DogSelectList, DogFormData, Dog } from '@/types/dog';
 import AppLayout from '@/layouts/AppLayout.vue';
 import DogForm from '@/components/forms/DogForm.vue';
 
-const { dog, dogs, types, statuses } = defineProps<{
-  dog?: Dog;
+const { dog, dogs, types, genders, statuses } = defineProps<{
+  dog: Dog;
   dogs?: DogSelectList[];
   types?: Record<string, string>;
+  genders?: Record<string, string>;
   statuses?: Record<string, string>;
 }>();
 
@@ -29,7 +30,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 const submit = (form: InertiaForm<DogFormData>) => {
   form.post(route('admin.dog.update', { id: dog.id }), {
     onFinish: () => {
-
+      form.slider_images = [];
     },
   });
 };
@@ -43,6 +44,7 @@ const submit = (form: InertiaForm<DogFormData>) => {
     <div class="flex w-full h-full flex-row flex-wrap gap-4 p-4">
       <DogForm
         :dog="dog"
+        :genders="genders"
         :dogs="dogs"
         :types="types"
         :statuses="statuses"

@@ -9,12 +9,14 @@ use Stevebauman\Purify\Casts\PurifyHtmlOnGet;
 class Dog extends Model
 {
     protected $fillable = [
-      'parent_id',
-      'name',
-      'image',
-      'description',
-      'birthdate',
-      'status',
+        'parent_id',
+        'name',
+        'gender',
+        'image',
+        'description',
+        'birthdate',
+        'type',
+        'status',
     ];
 
     protected $casts = [

@@ -16,6 +16,11 @@ class DogService
         'puppy' => 'Щенок',
     ];
 
+    private $genders = [
+        'male' => 'Сука',
+        'female' => 'Кабель',
+    ];
+
     public function getDogs(bool $all = false): Collection
     {
         $dogs = Dog::query()->when(!$all, function ($q){
@@ -29,10 +34,12 @@ class DogService
 
     public function getTypes(): array
     {
-        return [
-            'dog' => 'Собака',
-            'puppy' => 'Щенок'
-        ];
+        return $this->types;
+    }
+
+    public function getGenders(): array
+    {
+        return $this->genders;
     }
 
     public function getStatuses(): array
@@ -86,45 +93,52 @@ class DogService
 
     public function update(int $id, array $dogData): Dog
     {
-        $dog = Dog::query()->findOrFail($id);
-        $imageData = $dogData['image'];
-        $description = $dogData['description'];
-        $currentDescription = $dog->description;
+        try {
+            DB::beginTransaction();
 
-        unset($dogData['image']); // Удаляем элемент 'image' из массива
-        unset($dogData['description']);
+            $dog = Dog::findOrFail($id);
 
-        $imagesNew = Helper::extractImageUrls($description);
-        $imagesCurrent = Helper::extractImageUrls($currentDescription);
-        $diffImages = array_diff($imagesCurrent, $imagesNew);
+            // Извлекаем специальные поля
+            $description = $dogData['description'] ?? null;
+            $mainImage = $dogData['image'] ?? null;
+            $sliderImages = $dogData['slider_images'] ?? [];
+            $currentDescription = $dog->description;
 
-        $imageUploadService = new ImageUploadService();
+            // Обрабатываем изменения в описании и изображениях
+            if ($description) {
+                $imagesNew = Helper::extractImageUrls($description);
+                $imagesCurrent = Helper::extractImageUrls($currentDescription);
+                $diffImages = array_diff($imagesCurrent, $imagesNew);
 
-        if($diffImages){
-            foreach ($diffImages as $imageNeedRemove){
-                $filenameNeedRemove = pathinfo($imageNeedRemove, PATHINFO_BASENAME);
-                $imageUploadService->deleteImage($filenameNeedRemove, $dog->getImagesDir());
+                $this->removeUnusedImages($diffImages, $dog);
+
+                $dog->description = (new ImageBase64UploadService())->saveBase64Strings(
+                    $description,
+                    $dog->getImagesDir()
+                );
             }
+
+            // Обновляем основную информацию о собаке
+//            dd(Arr::except($dogData, ['image', 'description']));
+            $dog->update(Arr::except($dogData, ['image', 'description']));
+
+            // Обрабатываем основное изображение
+            if ($mainImage) {
+                $dog->image = $this->uploadMainImage($mainImage, $dog);
+                $dog->save();
+            }
+
+            // Обрабатываем изображения для слайдера
+            $this->processSliderImages($sliderImages, $dog);
+
+            DB::commit();
+
+            return $dog->fresh();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
         }
-
-        $dog->update($dogData);
-
-        if($imageData){
-            $fileName = $imageUploadService->uploadImage(
-                $imageData,
-                $dog->getImagesDir(),
-                $dog->image
-            );
-            $dog->image = $fileName;
-        }
-
-        $description = (new ImageBase64UploadService())->saveBase64Strings($description, $dog->getImagesDir());
-
-        $dog->description = $description;
-        $dog->save();
-
-        // todo проверка
-        return $dog;
     }
 
     public function deleteImage(int $id): Dog
@@ -137,6 +151,16 @@ class DogService
         $dog->save();
 
         return $dog;
+    }
+
+    public function getTypeByKey(string $key): string
+    {
+        return $this->types[$key] ?? '';
+    }
+
+    public function getGenderByKey(string | null $key): string
+    {
+        return $this->genders[$key] ?? '';
     }
 
     private function uploadMainImage($imageData, Dog $dog): string
@@ -171,8 +195,17 @@ class DogService
         DogImage::insert($imagesToInsert);
     }
 
-    public function getTypeByKey(string $key): string
+    private function removeUnusedImages(array $imagesToRemove, Dog $dog): void
     {
-        return $this->types[$key] ?? '';
+        if (empty($imagesToRemove)) {
+            return;
+        }
+
+        $imageUploadService = new ImageUploadService();
+
+        foreach ($imagesToRemove as $image) {
+            $filename = pathinfo($image, PATHINFO_BASENAME);
+            $imageUploadService->deleteImage($filename, $dog->getImagesDir());
+        }
     }
 }

@@ -18,6 +18,7 @@ class DogItemResource extends JsonResource
         $result = [
             'id' => $this->id,
             'name' => $this->name,
+            'gender' => (new DogService())->getGenderByKey($this->gender),
             'image_link' => $this->image_link,
             'birthdate' => $this->birthdate->format('d.m.Y'),
             'type' => (new DogService())->getTypeByKey($this->type),
